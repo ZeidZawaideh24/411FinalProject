@@ -9,9 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var items: [ToDoItem] = [
-        ToDoItem(name: "Item A", importance: .high),
-        ToDoItem(name: "Item B", importance: .medium),
-        ToDoItem(name: "Item C", importance: .low)
+        ToDoItem(name: "Item A", importance: .high, dueDate: Date().addingTimeInterval(86400)), // Example with due date
+        ToDoItem(name: "Item B", importance: .medium, dueDate: nil),
+        ToDoItem(name: "Item C", importance: .low, dueDate: Date().addingTimeInterval(-86400)) // Overdue example
     ]
     @State private var showAddItemView = false
 
@@ -23,8 +23,15 @@ struct ContentView: View {
                         Circle()
                             .fill(item.importance.color)
                             .frame(width: 10, height: 10)
-                        Text(item.name)
-                            .foregroundColor(.primary)
+
+                        VStack(alignment: .leading) {
+                            Text(item.name)
+                                .foregroundColor(.primary)
+                            
+                            if let dueDate = item.dueDate {
+                                DueDateView(dueDate: dueDate) // Reusable component for displaying due dates
+                            }
+                        }
                     }
                     .swipeActions(edge: .trailing) {
                         Button {
@@ -61,8 +68,8 @@ struct ContentView: View {
 
     private func editItem(_ item: ToDoItem) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
-            // Example of a basic edit
             items[index].name = "Updated: \(item.name)"
+            items[index].dueDate = Date().addingTimeInterval(86400) // Update due date example
         }
     }
 
@@ -75,6 +82,7 @@ struct ToDoItem: Identifiable {
     let id = UUID()
     var name: String
     var importance: Importance
+    var dueDate: Date?
 }
 
 enum Importance: String, CaseIterable {
@@ -89,10 +97,32 @@ enum Importance: String, CaseIterable {
     }
 }
 
+struct DueDateView: View {
+    var dueDate: Date
+
+    var body: some View {
+        let formattedDate = DateFormatter.shortDateFormatter.string(from: dueDate)
+        Text("Due: \(formattedDate)")
+            .font(.subheadline)
+            .foregroundColor(dueDate < Date() ? .red : .gray)
+    }
+}
+
+extension DateFormatter {
+    static let shortDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter
+    }()
+}
+
 struct AddItemView: View {
     @Environment(\.dismiss) var dismiss
     @State private var name: String = ""
     @State private var selectedImportance: Importance = .medium
+    @State private var hasDueDate: Bool = false
+    @State private var dueDate: Date = Date()
+
     var onAdd: (ToDoItem) -> Void
 
     var body: some View {
@@ -104,6 +134,12 @@ struct AddItemView: View {
                         Text(importance.rawValue.capitalized)
                     }
                 }
+
+                Toggle("Set Due Date", isOn: $hasDueDate)
+
+                if hasDueDate {
+                    DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                }
             }
             .navigationTitle("Add New Item")
             .toolbar {
@@ -114,7 +150,7 @@ struct AddItemView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Add") {
-                        onAdd(ToDoItem(name: name, importance: selectedImportance))
+                        onAdd(ToDoItem(name: name, importance: selectedImportance, dueDate: hasDueDate ? dueDate : nil))
                         dismiss()
                     }
                     .disabled(name.isEmpty)
