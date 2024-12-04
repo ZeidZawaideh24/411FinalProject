@@ -2,8 +2,8 @@
 //  ContentView.swift
 //  Finalproject
 //
-//  Created by Victoria Guzman on 11/27/24.
-//
+//  Created by Victoria Guzman on 11/27/24. [Categorization on importance for to-do's]
+//  Edited by Zeid Zawaideh on 12/3/2024. [Added the add, edit, and delete operations for to-do app]
 
 import SwiftUI
 
@@ -14,6 +14,8 @@ struct ContentView: View {
         ToDoItem(name: "Item C", importance: .low)
     ]
     @State private var showAddItemView = false
+    @State private var selectedItem: ToDoItem?
+    @State private var showEditItemView = false
 
     var body: some View {
         NavigationView {
@@ -28,7 +30,8 @@ struct ContentView: View {
                     }
                     .swipeActions(edge: .trailing) {
                         Button {
-                            editItem(item)
+                            selectedItem = item
+                            showEditItemView = true
                         } label: {
                             Label("Edit", systemImage: "pencil")
                         }
@@ -53,30 +56,45 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showAddItemView) {
                 AddItemView { newItem in
-                    items.append(newItem)
+                    addItem(newItem)
+                }
+            }
+            .sheet(isPresented: $showEditItemView) {
+                if let itemToEdit = selectedItem {
+                    EditItemView(item: itemToEdit) { updatedItem in
+                        updateItem(updatedItem)
+                    }
                 }
             }
         }
     }
 
-    private func editItem(_ item: ToDoItem) {
-        if let index = items.firstIndex(where: { $0.id == item.id }) {
-            // Example of a basic edit
-            items[index].name = "Updated: \(item.name)"
+    // MARK: - Add Item
+    private func addItem(_ newItem: ToDoItem) {
+        items.append(newItem)
+    }
+
+    // MARK: - Edit Item
+    private func updateItem(_ updatedItem: ToDoItem) {
+        if let index = items.firstIndex(where: { $0.id == updatedItem.id }) {
+            items[index] = updatedItem
         }
     }
 
+    // MARK: - Delete Item
     private func deleteItem(_ item: ToDoItem) {
         items.removeAll { $0.id == item.id }
     }
 }
 
+// MARK: - To-Do Item Model
 struct ToDoItem: Identifiable {
     let id = UUID()
     var name: String
     var importance: Importance
 }
 
+// MARK: - Importance Enum
 enum Importance: String, CaseIterable {
     case low, medium, high
 
@@ -89,6 +107,7 @@ enum Importance: String, CaseIterable {
     }
 }
 
+// MARK: - Add Item View
 struct AddItemView: View {
     @Environment(\.dismiss) var dismiss
     @State private var name: String = ""
@@ -124,6 +143,47 @@ struct AddItemView: View {
     }
 }
 
+// MARK: - Edit Item View
+struct EditItemView: View {
+    @Environment(\.dismiss) var dismiss
+    @State private var item: ToDoItem
+    var onSave: (ToDoItem) -> Void
+
+    init(item: ToDoItem, onSave: @escaping (ToDoItem) -> Void) {
+        _item = State(initialValue: item)
+        self.onSave = onSave
+    }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                TextField("Item Name", text: $item.name)
+                Picker("Importance", selection: $item.importance) {
+                    ForEach(Importance.allCases, id: \.self) { importance in
+                        Text(importance.rawValue.capitalized)
+                    }
+                }
+            }
+            .navigationTitle("Edit Item")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        onSave(item)
+                        dismiss()
+                    }
+                    .disabled(item.name.isEmpty)
+                }
+            }
+        }
+    }
+}
+
 #Preview {
     ContentView()
 }
+
