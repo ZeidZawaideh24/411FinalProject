@@ -4,14 +4,15 @@
 //
 //  Created by Victoria Guzman on 11/27/24. [Categorization on importance for to-do's]
 //  Edited by Zeid Zawaideh on 12/3/2024. [Added the add, edit, and delete operations for to-do app]
+// Edited by Tyler Lui. [Added the checkmark button to cross off completed tasks]
 
 import SwiftUI
 
 struct ContentView: View {
     @State private var items: [ToDoItem] = [
-        ToDoItem(name: "Item A", importance: .high),
-        ToDoItem(name: "Item B", importance: .medium),
-        ToDoItem(name: "Item C", importance: .low)
+        ToDoItem(name: "Item A", importance: .high, isChecked: false),
+        ToDoItem(name: "Item B", importance: .medium, isChecked: false),
+        ToDoItem(name: "Item C", importance: .low, isChecked: false)
     ]
     @State private var showAddItemView = false
     @State private var selectedItem: ToDoItem?
@@ -20,13 +21,20 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                ForEach(items) { item in
+                ForEach($items) { $item in
                     HStack {
+                        Button(action: {
+                            item.isChecked.toggle()
+                        }) {
+                            Image(systemName: item.isChecked ? "checkmark.square.fill" : "square")
+                                .foregroundColor(item.isChecked ? .green : .primary)
+                        }
                         Circle()
                             .fill(item.importance.color)
                             .frame(width: 10, height: 10)
                         Text(item.name)
-                            .foregroundColor(.primary)
+                            .foregroundColor(item.isChecked ? .secondary : .primary)
+                            .strikethrough(item.isChecked, color: .secondary)
                     }
                     .swipeActions(edge: .trailing) {
                         Button {
@@ -92,6 +100,7 @@ struct ToDoItem: Identifiable {
     let id = UUID()
     var name: String
     var importance: Importance
+    var isChecked: Bool // tyler
 }
 
 // MARK: - Importance Enum
@@ -133,7 +142,7 @@ struct AddItemView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Add") {
-                        onAdd(ToDoItem(name: name, importance: selectedImportance))
+                        onAdd(ToDoItem(name: name, importance: selectedImportance, isChecked: false)) // tyler
                         dismiss()
                     }
                     .disabled(name.isEmpty)
@@ -186,4 +195,3 @@ struct EditItemView: View {
 #Preview {
     ContentView()
 }
-
