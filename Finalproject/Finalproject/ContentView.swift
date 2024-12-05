@@ -4,7 +4,7 @@
 //
 //  Created by Victoria Guzman on 11/27/24. [Categorization on importance for to-do's]
 //  Edited by Zeid Zawaideh on 12/3/2024. [Added the add, edit, and delete operations for to-do app]
-// Edited by Tyler Lui. [Added the checkmark button to cross off completed tasks]
+// Edited by Tyler Lui on 12/4/2024. [Added the checkmark button to cross off completed tasks]
 
 import SwiftUI
 
@@ -100,7 +100,7 @@ struct ToDoItem: Identifiable {
     let id = UUID()
     var name: String
     var importance: Importance
-    var isChecked: Bool // tyler
+    var isChecked: Bool
 }
 
 // MARK: - Importance Enum
@@ -142,7 +142,7 @@ struct AddItemView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Add") {
-                        onAdd(ToDoItem(name: name, importance: selectedImportance, isChecked: false)) // tyler
+                        onAdd(ToDoItem(name: name, importance: selectedImportance, isChecked: false))
                         dismiss()
                     }
                     .disabled(name.isEmpty)
