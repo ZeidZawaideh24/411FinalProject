@@ -5,7 +5,7 @@
 //  Created by Victoria Guzman on 11/27/24. [Categorization on importance for to-do's]
 //  Edited by Zeid Zawaideh on 12/3/2024. [Added the add, edit, and delete operations for to-do app]
 //  Edited by Tyler Lui on 12/4/2024. [Added the checkmark button to cross off completed tasks]
-//  Edited by Quan Yingmin on 12/4/2024. [Added due date feature with color-coded dates and persistence]
+//  Edited by Quan Yingmin on 12/4/2024. [Added due date feature with color-coded dates]
 //  Edited by Timothy Hulse on 12/5/2024 [Added reordering functionality with EditMode to enable task rearrangement]
 
 
