@@ -4,7 +4,8 @@
 //
 //  Created by Victoria Guzman on 11/27/24. [Categorization on importance for to-do's]
 //  Edited by Zeid Zawaideh on 12/3/2024. [Added the add, edit, and delete operations for to-do app]
-// Edited by Tyler Lui on 12/4/2024. [Added the checkmark button to cross off completed tasks]
+//  Edited by Tyler Lui on 12/4/2024. [Added the checkmark button to cross off completed tasks]
+//  Edited by Timothy Hulse on 12/5/2024 [Added reordering functionality with EditMode to enable task rearrangement]
 
 import SwiftUI
 
@@ -17,7 +18,8 @@ struct ContentView: View {
     @State private var showAddItemView = false
     @State private var selectedItem: ToDoItem?
     @State private var showEditItemView = false
-
+    @State private var editMode: EditMode = .inactive // Track edit mode for reordering
+    
     var body: some View {
         NavigationView {
             List {
@@ -52,16 +54,27 @@ struct ContentView: View {
                         }
                     }
                 }
+                .onMove(perform: moveItem) // Enable reordering functionality
             }
             .listStyle(.insetGrouped)
             .navigationTitle("To-Do List")
             .toolbar {
-                Button(action: {
-                    showAddItemView = true
-                }) {
-                    Label("Add Item", systemImage: "plus")
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        editMode = editMode == .active ? .inactive : .active
+                    }) {
+                        Text(editMode == .active ? "Done" : "Edit")
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showAddItemView = true
+                    }) {
+                        Label("Add Item", systemImage: "plus")
+                    }
                 }
             }
+            .environment(\.editMode, $editMode) // Pass edit mode binding
             .sheet(isPresented: $showAddItemView) {
                 AddItemView { newItem in
                     addItem(newItem)
@@ -92,6 +105,11 @@ struct ContentView: View {
     // MARK: - Delete Item
     private func deleteItem(_ item: ToDoItem) {
         items.removeAll { $0.id == item.id }
+    }
+
+    // MARK: - Move Item (Reorder)
+    private func moveItem(fromOffsets source: IndexSet, toOffset destination: Int) {
+        items.move(fromOffsets: source, toOffset: destination)
     }
 }
 
@@ -191,6 +209,7 @@ struct EditItemView: View {
         }
     }
 }
+
 
 #Preview {
     ContentView()
