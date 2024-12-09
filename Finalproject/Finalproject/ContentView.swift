@@ -174,6 +174,7 @@ struct ToDoItem: Identifiable, Codable {
 }
 
 // MARK: - Importance Enum
+// Victoria - Color coded on importance
 enum Importance: String, CaseIterable, Codable {
     case low, medium, high
     var color: Color {
